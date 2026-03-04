@@ -16,6 +16,11 @@ public class Accommodation {
     private String categoryName;
     private BigDecimal baseRateLkr;
 
+    private String calculatedStatus; // "AVAILABLE", "BOOKED", or "MAINTENANCE"
+
+    public String getCalculatedStatus() { return calculatedStatus; }
+    public void setCalculatedStatus(String calculatedStatus) { this.calculatedStatus = calculatedStatus; }
+
     // Getters and Setters
     public int getRoomPk() { return roomPk; }
     public void setRoomPk(int roomPk) { this.roomPk = roomPk; }
@@ -35,4 +40,3 @@ public class Accommodation {
     public BigDecimal getBaseRateLkr() { return baseRateLkr; }
     public void setBaseRateLkr(BigDecimal baseRateLkr) { this.baseRateLkr = baseRateLkr; }
 }
-

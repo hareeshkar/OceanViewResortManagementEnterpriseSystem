@@ -44,5 +44,18 @@ public class Reservation {
 
     public String getBookingStatus() { return bookingStatus; }
     public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
-}
 
+// --- Dashboard Display Fields (Joined from other tables) ---
+    private String roomNumber;
+    private java.math.BigDecimal grandTotal;
+    private long totalNights;
+
+    public String getRoomNumber() { return roomNumber; }
+    public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
+
+    public java.math.BigDecimal getGrandTotal() { return grandTotal; }
+    public void setGrandTotal(java.math.BigDecimal grandTotal) { this.grandTotal = grandTotal; }
+
+    public long getTotalNights() { return totalNights; }
+    public void setTotalNights(long totalNights) { this.totalNights = totalNights; }
+}
