@@ -44,3 +44,6 @@ build/
 ### Local Documentation (Not tracked in Git) ###
 PHASE_*.md
 !README.md
+
+# Temporary security tool (do not track)
+/src/main/java/oceanview/util/SecuritySetupTool.java
