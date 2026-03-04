@@ -47,6 +47,7 @@
         <a href="dashboard.jsp"     class="nav-link active"><span class="nav-icon">📊</span> Executive Dashboard</a>
         <a href="manage_users.jsp"  class="nav-link">        <span class="nav-icon">👥</span> Manage Staff Access</a>
         <a href="admin_ledger.jsp"  class="nav-link">        <span class="nav-icon">📋</span> Global Financial Ledger</a>
+        <a href="help.jsp"          class="nav-link">        <span class="nav-icon">📖</span> Administrator Guide</a>
         <div class="sidebar-divider"></div>
     </nav>
     <div class="sidebar-footer">
