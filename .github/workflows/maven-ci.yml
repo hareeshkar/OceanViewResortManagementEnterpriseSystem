@@ -1,0 +1,35 @@
+name: OceanView Enterprise CI Workflow
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Compile and Run JUnit 4 Enterprise Test Suite
+      run: mvn -B clean test
+
+    - name: Build WAR Package
+      run: mvn -B package -DskipTests
+
+    - name: Upload WAR Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: OceanViewResort
+        path: target/OceanViewResort.war
+
