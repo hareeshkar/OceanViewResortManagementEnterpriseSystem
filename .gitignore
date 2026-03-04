@@ -16,6 +16,9 @@ target/
 *.iml
 *.ipr
 
+# Smart Tomcat plugin files
+.smarttomcat/
+
 ### Eclipse ###
 .apt_generated
 .classpath
