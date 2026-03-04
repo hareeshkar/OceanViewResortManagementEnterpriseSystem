@@ -151,6 +151,33 @@ public class AccountDAO {
             throw new RuntimeException("Database error while fetching all accounts: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Admin Feature: Retrieves all system accounts with creation timestamp for the
+     * User Management dashboard. The created_at timestamp is stored in the secureSalt
+     * field purely for display purposes on the admin UI (no hashing involved).
+     *
+     * @return List of SysAccount objects enriched with the created_at timestamp
+     */
+    public java.util.List<SysAccount> getAllAccountsForAdmin() {
+        java.util.List<SysAccount> list = new java.util.ArrayList<>();
+        String sql = "SELECT account_id, login_name, access_level, created_at " +
+                     "FROM ov_sys_account ORDER BY created_at DESC";
+        try (Connection conn = DatabaseFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                SysAccount acc = new SysAccount();
+                acc.setAccountId(rs.getInt("account_id"));
+                acc.setLoginName(rs.getString("login_name"));
+                acc.setAccessLevel(rs.getString("access_level"));
+                // Temporarily reuse secureSalt field to carry the created_at display value
+                acc.setSecureSalt(rs.getTimestamp("created_at").toString().substring(0, 16));
+                list.add(acc);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }
 
 
