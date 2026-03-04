@@ -62,22 +62,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% for(Reservation r : bookings) { %>
+                        <% if(bookings.isEmpty()) { %>
+                        <tr>
+                            <td colspan="8" style="text-align:center; padding:2.5rem; color: var(--text-muted);">
+                                No reservation records found for this page.
+                            </td>
+                        </tr>
+                        <% } else {
+                            for(Reservation r : bookings) {
+                                String bStatus = r.getBookingStatus();
+                                String bClass = "badge-info";
+                                if("CONFIRMED".equals(bStatus)) bClass = "badge-success";
+                                else if("CANCELLED".equals(bStatus)) bClass = "badge-warning";
+                                else if("COMPLETED".equals(bStatus)) bClass = "badge-purple";
+                                else if("CHECKED_IN".equals(bStatus)) bClass = "badge-info";
+                        %>
                         <tr>
                             <td><strong><%= r.getBookingRef() %></strong></td>
                             <td><%= r.getGuestName() %></td>
                             <td>Room <%= r.getRoomNumber() %></td>
                             <td><%= r.getArrivalDate() %></td>
                             <td><%= r.getDepartureDate() %></td>
-                            <td><%= r.getGrandTotal() %></td>
-                            <td><span class="badge badge-success"><%= r.getBookingStatus() %></span></td>
+                            <td>LKR <%= r.getGrandTotal() %></td>
+                            <td><span class="badge <%= bClass %>"><%= bStatus %></span></td>
                             <td>
                                 <a href="invoice.jsp?id=<%= r.getReservationPk() %>" style="color: var(--accent-emerald); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
-                                    <i>📄</i> Invoice
+                                    📄 Invoice
                                 </a>
                             </td>
                         </tr>
-                        <% } %>
+                        <% }} %>
                     </tbody>
                 </table>
             </div>
