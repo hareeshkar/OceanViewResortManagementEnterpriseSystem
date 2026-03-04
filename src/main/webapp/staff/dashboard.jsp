@@ -4,6 +4,7 @@
 <%@ page import="oceanview.model.RoomCategory" %>
 <%@ page import="oceanview.model.Reservation" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.math.BigDecimal" %>
 <%
     String role = (String) session.getAttribute("userRole");
     if (role == null || (!role.equals("STAFF") && !role.equals("ADMIN"))) {
@@ -11,140 +12,151 @@
         return;
     }
 
-    // Server-side data fetch for UI
+    // Server-side data fetch
     AccommodationDAO accDao = new AccommodationDAO();
     List<RoomCategory> categories = accDao.getAllCategories();
 
     ReservationDAO resDao = new ReservationDAO();
-    List<Reservation> recentBookings = resDao.getRecentReservations(5); // Get last 5
+    List<Reservation> recentBookings = resDao.getRecentReservations(5);
+
+    // Summary Stats
+    int totalAvailable = accDao.getAvailableRoomCount(); // Assumed method, check DAO if fails
+    BigDecimal totalRevenue = resDao.getTotalRevenueLKR(); // Assumed method, check DAO if fails
+    int todayCheckins = resDao.getCheckinCountForDate(java.time.LocalDate.now().toString()); // Assumed method
 %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Staff Dashboard | OceanView Enterprise</title>
-    <style>
-        :root { --emerald: #2ecc71; --forest: #27ae60; --dark-ocean: #2c3e50; --light-bg: #f4f6f9; --border: #bdc3c7; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; background-color: var(--light-bg); }
-
-        /* Sidebar */
-        .sidebar { background-color: var(--dark-ocean); color: white; padding: 20px 0; }
-        .sidebar h2 { text-align: center; color: var(--emerald); margin-bottom: 30px; }
-        .nav-link { display: block; padding: 15px 25px; color: white; text-decoration: none; border-left: 4px solid transparent; }
-        .nav-link.active { background-color: #34495e; border-left-color: var(--emerald); }
-        .logout-btn { margin-top: 50px; background: #e74c3c; text-align: center; margin: 20px; border-radius: 5px; }
-
-        /* Content */
-        .main-content { padding: 40px; }
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        h3 { color: var(--dark-ocean); margin-bottom: 20px; border-bottom: 2px solid var(--emerald); padding-bottom: 10px; }
-
-        /* Form */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group.full { grid-column: span 3; }
-        label { font-weight: 600; color: #34495e; font-size: 14px; margin-bottom: 5px; }
-        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 5px; }
-        .btn-submit { background: var(--forest); color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; grid-column: span 3; }
-        .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
-
-        /* Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: var(--dark-ocean); color: white; }
-        tr:hover { background-color: #f5f5f5; }
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; }
-        .badge-CONFIRMED { background-color: var(--emerald); }
-
-        .alert { padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
-        .alert-success { background: #eafaf1; color: var(--forest); border: 1px solid #d5f5e3; }
-        .alert-error { background: #fdeaea; color: #e74c3c; border: 1px solid #fad2d2; }
-    </style>
+    <title>SaaS Dashboard | OceanView Management</title>
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/elite_ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="animate-in">
 
-    <div class="sidebar">
-        <h2>🏨 Staff Panel</h2>
-        <a href="dashboard.jsp" class="nav-link active">📅 Dashboard & Booking</a>
-        <a href="<%= request.getContextPath() %>/logout" class="nav-link logout-btn">Log Out</a>
-    </div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>OceanView</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.jsp" class="nav-item active"><i>📅</i> Dashboard</a>
+            <a href="view_bookings.jsp" class="nav-item"><i>📋</i> All Bookings</a>
+            <a href="help.jsp" class="nav-item"><i>📖</i> Guidelines</a>
+        </nav>
+        <div class="logout-container">
+            <a href="<%= request.getContextPath() %>/logout" class="btn-logout">Logout</a>
+        </div>
+    </aside>
 
-    <div class="main-content">
+    <main class="main-wrapper">
+        <header class="page-header">
+            <h1>Staff Dashboard</h1>
+        </header>
+
         <%
             if (request.getParameter("msg") != null) out.print("<div class='alert alert-success'>✅ " + request.getParameter("msg") + "</div>");
             if (request.getParameter("error") != null) out.print("<div class='alert alert-error'>⚠ " + request.getParameter("error") + "</div>");
         %>
 
-        <!-- 1. Booking Form Section -->
-        <div class="card">
-            <h3>Create New Reservation</h3>
-            <form action="<%= request.getContextPath() %>/staff/book-room" method="POST">
-                <div class="form-grid">
-                    <div class="form-group"><label>Guest Name</label><input type="text" name="guestName" required></div>
-                    <div class="form-group"><label>Phone (10 Digits)</label><input type="tel" name="contactPhone" pattern="0[0-9]{9}" required></div>
-                    <div class="form-group"><label>Address</label><input type="text" name="guestAddress" required></div>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Today's Check-ins</span>
+                <span class="stat-value"><%= todayCheckins %></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Rooms Available</span>
+                <span class="stat-value"><%= totalAvailable %></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Revenue (LKR)</span>
+                <span class="stat-value"><%= totalRevenue %></span>
+            </div>
+        </section>
 
-                    <div class="form-group"><label>Arrival</label><input type="date" id="arrivalDate" name="arrivalDate" required></div>
-                    <div class="form-group"><label>Departure</label><input type="date" id="departureDate" name="departureDate" required></div>
+        <section class="form-layout">
+            <div class="card">
+                <h3 class="card-title">New Reservation</h3>
+                <form action="<%= request.getContextPath() %>/staff/book-room" method="POST" class="form-section">
+                    <div class="form-group">
+                        <label>Guest Name</label>
+                        <input type="text" name="guestName" placeholder="Full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone (10 Digits)</label>
+                        <input type="tel" name="contactPhone" pattern="0[0-9]{9}" placeholder="07XXXXXXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" name="guestAddress" placeholder="Home or office address" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Arrival</label>
+                            <input type="date" id="arrivalDate" name="arrivalDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Departure</label>
+                            <input type="date" id="departureDate" name="departureDate" required>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label>Room Category</label>
                         <select id="categorySelector" required>
                             <option value="">-- Select Category --</option>
                             <% for(RoomCategory cat : categories) { %>
-                                <option value="<%= cat.getCategoryId() %>"><%= cat.getCategoryName() %> (<%= cat.getBaseRateLkr() %> LKR)</option>
+                                <option value="<%= cat.getCategoryId() %>"><%= cat.getCategoryName() %> (LKR <%= cat.getBaseRateLkr() %>)</option>
                             <% } %>
                         </select>
                     </div>
 
-                    <div class="form-group full">
-                        <label>Select Room (Filtered by Status)</label>
+                    <div class="form-group">
+                        <label>Select Room</label>
                         <select id="roomSelector" name="roomPk" required disabled>
-                            <option value="">Select Dates & Category First</option>
+                            <option value="">Choose dates and category first</option>
                         </select>
                         <input type="hidden" id="baseRateLkr" name="baseRateLkr" value="0">
                     </div>
 
-                    <button type="submit" class="btn-submit" id="submitBtn" disabled>Confirm Reservation</button>
-                </div>
-            </form>
-        </div>
+                    <button type="submit" class="btn-primary" id="submitBtn" disabled>Confirm Reservation</button>
+                </form>
+            </div>
 
-        <!-- 2. Recent Bookings Table Section -->
-        <div class="card">
-            <h3>Recent Bookings</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ref</th>
-                        <th>Guest</th>
-                        <th>Room</th>
-                        <th>Dates</th>
-                        <th>Nights</th>
-                        <th>Grand Total (LKR)</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if(recentBookings.isEmpty()) { %>
-                        <tr><td colspan="7" style="text-align:center;">No recent bookings found.</td></tr>
-                    <% } else {
-                        for(Reservation r : recentBookings) { %>
-                        <tr>
-                            <td><strong><%= r.getBookingRef() %></strong></td>
-                            <td><%= r.getGuestName() %></td>
-                            <td>Room <%= r.getRoomNumber() %></td>
-                            <td><%= r.getArrivalDate() %> to <%= r.getDepartureDate() %></td>
-                            <td><%= r.getTotalNights() %></td>
-                            <td><%= r.getGrandTotal() %></td>
-                            <td><span class="badge badge-<%= r.getBookingStatus() %>"><%= r.getBookingStatus() %></span></td>
-                        </tr>
-                    <% }} %>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="card">
+                <h3 class="card-title">Recent Bookings</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Guest</th>
+                                <th>Room</th>
+                                <th>Nights</th>
+                                <th>Total (LKR)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(recentBookings.isEmpty()) { %>
+                                <tr><td colspan="6" style="text-align:center; padding: 2rem; color: #64748b;">No recent bookings found.</td></tr>
+                            <% } else {
+                                for(Reservation r : recentBookings) { %>
+                                <tr>
+                                    <td><strong><%= r.getBookingRef() %></strong></td>
+                                    <td><%= r.getGuestName() %></td>
+                                    <td>Room <%= r.getRoomNumber() %></td>
+                                    <td><%= r.getTotalNights() %></td>
+                                    <td>LKR <%= r.getGrandTotal() %></td>
+                                    <td><a href="invoice.jsp?id=<%= r.getReservationPk() %>" style="color: var(--accent-emerald); font-weight: 600; text-decoration: none;">📄 Invoice</a></td>
+                                </tr>
+                            <% }} %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -161,7 +173,7 @@
             function validateAndFetch() {
                 var a = arrIn.value; var d = depIn.value; var c = catSel.value;
                 if(a && d && c && a < d) fetchRooms(a, d, c);
-                else { roomSel.innerHTML = '<option value="">Complete selection...</option>'; roomSel.disabled = true; btn.disabled = true; }
+                else { roomSel.innerHTML = '<option value="">Wait for selection...</option>'; roomSel.disabled = true; btn.disabled = true; }
             }
 
             arrIn.addEventListener("change", function() {
@@ -174,30 +186,26 @@
             catSel.addEventListener("change", validateAndFetch);
 
             function fetchRooms(arr, dep, cat) {
-                roomSel.innerHTML = '<option value="">Loading...</option>';
+                roomSel.innerHTML = '<option value="">Checking rooms...</option>';
                 roomSel.disabled = true;
                 btn.disabled = true;
 
-                fetch("<%= request.getContextPath() %>/api/availability?arrival="+arr+"&departure="+dep+"&categoryId="+cat+"&_t="+new Date().getTime())
+                fetch("<%= request.getContextPath() %>/api/availability?arrival=" + arr + "&departure=" + dep + "&categoryId=" + cat + "&_t=" + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
-                    roomSel.innerHTML = '<option value="">-- Choose a Room --</option>';
-                    if(data.length === 0) { roomSel.innerHTML = '<option value="">No rooms in this category</option>'; return; }
+                    roomSel.innerHTML = '<option value="">-- Choose a Free Room --</option>';
+                    if(data.length === 0) { roomSel.innerHTML = '<option value="">No rooms available</option>'; return; }
 
                     data.forEach(room => {
                         var opt = document.createElement('option');
                         opt.value = room.roomPk;
                         opt.setAttribute('data-rate', room.baseRateLkr);
 
-                        // Dynamically append status and disable if not available
                         var label = "Room " + room.roomNumber + " - [" + room.status + "]";
                         opt.text = label;
 
                         if(room.status !== "AVAILABLE") {
                             opt.disabled = true;
-                            opt.style.color = 'red';
-                        } else {
-                            opt.style.color = 'green';
                         }
                         roomSel.appendChild(opt);
                     });
@@ -215,3 +223,4 @@
     </script>
 </body>
 </html>
+

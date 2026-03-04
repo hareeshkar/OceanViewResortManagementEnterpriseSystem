@@ -127,4 +127,22 @@ public class AccommodationDAO {
         }
         return rooms;
     }
+
+    /**
+     * REDESIGN HELP: Gets the total count of rooms available as of NOW.
+     */
+    public int getAvailableRoomCount() {
+        String sql = "SELECT COUNT(*) FROM ov_accommodation WHERE operational_status = 'AVAILABLE' " +
+                     "AND room_pk NOT IN ( " +
+                     "  SELECT room_pk FROM ov_reservation " +
+                     "  WHERE booking_status IN ('CONFIRMED', 'CHECKED_IN') " +
+                     "  AND CURRENT_DATE < departure_date AND CURRENT_DATE >= arrival_date" +
+                     ")";
+        try (Connection conn = DatabaseFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
 }
