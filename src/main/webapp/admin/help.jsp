@@ -28,10 +28,10 @@
     </div>
     <div class="sidebar-role">Administrator</div>
     <nav class="sidebar-nav">
-        <a href="dashboard.jsp"    class="nav-link">        <span class="nav-icon">📊</span> Executive Dashboard</a>
-        <a href="manage_users.jsp" class="nav-link">        <span class="nav-icon">👥</span> Manage Staff Access</a>
-        <a href="admin_ledger.jsp" class="nav-link">        <span class="nav-icon">📋</span> Global Financial Ledger</a>
-        <a href="help.jsp"         class="nav-link active"><span class="nav-icon">📖</span> Administrator Guide</a>
+        <a href="dashboard.jsp"    class="nav-link">        <span class="nav-icon">📊</span> Dashboard</a>
+        <a href="manage_users.jsp" class="nav-link">        <span class="nav-icon">👥</span> Staff Access</a>
+        <a href="admin_ledger.jsp" class="nav-link">        <span class="nav-icon">📋</span> Billing Ledger</a>
+        <a href="help.jsp"         class="nav-link active"><span class="nav-icon">📖</span> Guide</a>
         <div class="sidebar-divider"></div>
     </nav>
     <div class="sidebar-footer">
@@ -107,24 +107,25 @@
                 </div>
             </div>
             <div style="padding: 20px;">
-                <p>Use the "Manage Staff Access" tab to view all authorized personnel. The system uses <strong>Role-Based Access Control (RBAC)</strong>.</p>
+                <p>Use the <strong>Staff Access</strong> tab to view all authorised personnel. The system uses <strong>Role-Based Access Control (RBAC)</strong>.</p>
                 <p><strong>ADMIN:</strong> Full access to financials and logs.<br><strong>STAFF:</strong> Restricted to bookings and invoicing only.</p>
+                <p style="margin-top:12px;">Use the <strong>+ Add Account</strong> button to create new staff or admin accounts directly from the browser — passwords are automatically hashed with SHA-256 + salt.</p>
             </div>
         </div>
 
-        <!-- Topic 4: Global Ledger -->
+        <!-- Topic 4: Billing Ledger -->
         <div class="card">
             <div class="card-header">
                 <div>
                     <div class="card-title" style="display: flex; align-items: center; gap: 12px;">
                         <span style="font-size: 1.5rem;">📋</span>
-                        Global Financial Ledger
+                        Billing Ledger
                     </div>
                 </div>
             </div>
             <div style="padding: 20px;">
-                <p>Unlike the staff view, your Global Ledger allows you to see the entire history of the hotel's operations. This is useful for end-of-month reconciliation.</p>
-                <p>If you need to print a past invoice for a guest dispute, you can generate it directly from the Ledger action menu.</p>
+                <p>The <strong>Billing Ledger</strong> gives you full visibility into every reservation and invoice — with a live daily revenue trend chart and per-room revenue breakdown. Unlike the staff view, you see the entire billing history.</p>
+                <p>Print past invoices for guest disputes directly from the Ledger action menu.</p>
             </div>
         </div>
 

@@ -178,6 +178,50 @@ public class AccountDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
+
+    /**
+     * Admin Feature: Deletes a system account by account ID.
+     * This should only be called by authenticated ADMIN users.
+     *
+     * @param accountId The ID of the account to delete
+     * @return true if deleted, false otherwise
+     */
+    public boolean deleteAccount(int accountId) {
+        String sql = "DELETE FROM ov_sys_account WHERE account_id = ?";
+        try (Connection conn = DatabaseFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while deleting account: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Admin Feature: Creates a new system account with a securely hashed password.
+     *
+     * @param loginName   The desired username
+     * @param secureHash  The SHA-256 hash of (password + salt)
+     * @param secureSalt  The random salt used for hashing
+     * @param accessLevel "ADMIN" or "STAFF"
+     * @return true if the account was created successfully
+     */
+    public boolean createAccount(String loginName, String secureHash, String secureSalt, String accessLevel) {
+        String sql = "INSERT INTO ov_sys_account (login_name, secure_hash, secure_salt, access_level) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DatabaseFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, loginName);
+            ps.setString(2, secureHash);
+            ps.setString(3, secureSalt);
+            ps.setString(4, accessLevel);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            // Duplicate username will throw constraint violation
+            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("duplicate")) {
+                return false;
+            }
+            throw new RuntimeException("Database error while creating account: " + e.getMessage(), e);
+        }
+    }
 }
-
-
