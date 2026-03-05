@@ -37,9 +37,15 @@ public class SecurityFilter implements Filter {
         response.setHeader("Pragma", "no-cache"); // HTTP 1.0
         response.setDateHeader("Expires", 0); // Proxies
 
+        String contextPath = request.getContextPath();
+
+        // Check if request is for the root / welcome page (index.jsp)
+        boolean isRootRequest = uri.equals(contextPath) || uri.equals(contextPath + "/")
+                || uri.endsWith("index.jsp");
+
         // Allow public assets and login actions to bypass the filter
-        if (uri.endsWith("login.jsp") || uri.endsWith("/authenticate") ||
-            uri.endsWith("/logout") || uri.contains("/css/") ||
+        if (isRootRequest || uri.endsWith("login.jsp") || uri.endsWith("/authenticate") ||
+            uri.endsWith("/logout") || uri.contains("/css/") || uri.contains("/images/") ||
             uri.contains("/js/") || uri.endsWith("test.jsp")) {
 
             // If user is already logged in and tries to go to login.jsp, redirect them to their dashboard
