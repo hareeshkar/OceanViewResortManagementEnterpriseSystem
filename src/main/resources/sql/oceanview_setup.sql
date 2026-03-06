@@ -101,6 +101,11 @@ INSERT INTO ov_accommodation (room_number, category_id) VALUES
 ('201', 2), ('202', 2), ('203', 2),
 ('301', 3);
 
--- Note: Admin and Staff accounts will be created via SecuritySetupTool.java
--- This ensures Java-based cryptographic hashing is used for security.
+-- System Accounts (Admin and Staff for testing)
+-- Passwords are hashed using SHA-256 with salt
+-- Admin: username=admin, password=admin123, salt=A1B2C3D4
+-- Staff: username=staff, password=staff123, salt=X9Y8Z7W6
+INSERT INTO ov_sys_account (login_name, secure_hash, secure_salt, access_level) VALUES
+('admin', '6FCD8C198A80B4AF659461894503A25E71B9B0F5F2BEACE61BCE8063C6798C2C', 'A1B2C3D4', 'ADMIN'),
+('staff', 'A40F828DDEED1B2CC942CA6E3573D33024531E7B6BC75CA3FBC657A49F349C13', 'X9Y8Z7W6', 'STAFF');
 
