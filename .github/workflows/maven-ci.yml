@@ -10,6 +10,17 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # 🛡️ DEVOPS FIX: Spin up a MySQL Database in the GitHub Cloud
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: oceanview_management_enterprice_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -20,6 +31,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+
+    - name: Initialize Database Schema and Data
+      # This injects your local SQL file into the cloud database
+      run: mysql -h 127.0.0.1 -P 3306 -u root < src/main/resources/sql/oceanview_setup.sql
 
     - name: Compile and Run JUnit 4 Enterprise Test Suite
       run: mvn -B clean test
